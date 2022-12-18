@@ -1,7 +1,7 @@
 import { connectionDB } from "../database/db.js";
 import bcrypt from "bcrypt";
 
-export default async function signup(req, res) {
+export async function signup(req, res) {
   const { email, name, password } = res.locals.user;
   const encryptPassword = bcrypt.hashSync(password, 10);
   try {
@@ -22,3 +22,5 @@ export default async function signup(req, res) {
     return res.send(error.message);
   }
 }
+
+export async function signin(req,res){}

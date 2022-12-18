@@ -1,5 +1,5 @@
 import { registerSchema } from "../models/Register.js";
-import { connectionDB } from "../database/db.js";
+import { loginSchema } from "../models/Login.js";
 
 export function registerValidation(req, res, next) {
   const validation = registerSchema.validate(req.body, { abortEarly: false });
@@ -9,6 +9,18 @@ export function registerValidation(req, res, next) {
   }
 
   res.locals.user = req.body;
+
+  next();
+}
+
+export function loginValidation(req, res, next) {
+  const validation = loginSchema.validate(req.body, { abortEarly: false });
+  if (validation.error) {
+    const erros = validation.error.details.map((detail) => detail.message);
+    res.send(erros).status(422);
+  }
+
+  res.locals.login = req.body;
 
   next();
 }
