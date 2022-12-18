@@ -17,7 +17,7 @@ export function loginValidation(req, res, next) {
   const validation = loginSchema.validate(req.body, { abortEarly: false });
   if (validation.error) {
     const erros = validation.error.details.map((detail) => detail.message);
-    res.status(422).send(erros);
+    return res.status(422).send(erros);
   }
 
   res.locals.login = req.body;
