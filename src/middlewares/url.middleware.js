@@ -19,8 +19,8 @@ export function urlValidation(req, res, next) {
           );
           return res.status(422).send(erros);
         } else {
-          // next();
-          return res.send("é válido");
+          res.locals.url = {url:req.body.url,userId:verified.userId};
+          return next();
         }
       } else {
         return res.sendStatus(401);
