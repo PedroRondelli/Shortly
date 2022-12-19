@@ -15,3 +15,32 @@ export async function registerUrl(req, res) {
     return res.send(error.message);
   }
 }
+
+export async function getUrlById(req, res) {
+  const { id } = req.params;
+  try {
+    const { rows } = await connectionDB.query(
+      "SELECT * FROM urls WHERE id=$1",
+      [Number(id)]
+    );
+    if (rows.length === 1) {
+      const responseObject = {
+        id: rows[0].id,
+        shortUrl: rows[0].shortUrl,
+        url: rows[0].bigUrl,
+      };
+      return res.status(200).send(responseObject);
+    } else {
+      return res.sendStatus(404);
+    }
+  } catch (error) {
+    return res.send(error.message);
+  }
+}
+
+// {
+//   "id": 1,
+//   "userId": 1,
+//   "shortUrl": "CY_wRnuldJZNjkeIB18eH",
+//   "bigUrl": "https://vasco.com.br/"
+// }
