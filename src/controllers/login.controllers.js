@@ -38,13 +38,15 @@ export async function signin(req, res) {
       const correctPassword = bcrypt.compareSync(password, rows[0].password);
       if (correctPassword) {
         const jwtSecretKey = process.env.JWT_SECRET_KEY;
-        console.log(rows[0].id);
+
         const data = {
           time: Date(),
           userId: rows[0].id,
         };
 
-        const token = jwt.sign(data, jwtSecretKey);
+        const token = jwt.sign(data, jwtSecretKey, {
+          expiresIn: "2h",
+        });
 
         return res.send(token).status(200);
       } else {
