@@ -38,9 +38,20 @@ export async function getUrlById(req, res) {
   }
 }
 
-// {
-//   "id": 1,
-//   "userId": 1,
-//   "shortUrl": "CY_wRnuldJZNjkeIB18eH",
-//   "bigUrl": "https://vasco.com.br/"
-// }
+export async function redirectUser(req, res) {
+  const { shortUrl } = req.params;
+  try {
+    const { rows } = await connectionDB.query(
+      'SELECT * FROM urls WHERE "shortUrl"=$1',
+      [shortUrl]
+    );
+    if (rows.length === 0) {
+      return res.sendStatus(404);
+    } else {
+      
+      return res.redirect(rows[0].bigUrl);
+    }
+  } catch (error) {
+    return res.status(404).send(error.message);
+  }
+}
