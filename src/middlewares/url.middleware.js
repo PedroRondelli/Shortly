@@ -9,7 +9,7 @@ export function urlValidation(req, res, next) {
     if (token) {
       const finalToken = token.replace("Bearer ", "");
       const verified = jwt.verify(finalToken, process.env.JWT_SECRET_KEY);
-      console.log(verified);
+      
 
       if (verified) {
         const validation = urlSchema.validate(req.body, { abortEarly: false });
@@ -32,3 +32,4 @@ export function urlValidation(req, res, next) {
     return res.status(401).send(error.message);
   }
 }
+

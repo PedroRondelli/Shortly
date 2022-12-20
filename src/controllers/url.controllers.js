@@ -1,5 +1,8 @@
 import { connectionDB } from "../database/db.js";
 import { nanoid } from "nanoid";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();
 
 export async function registerUrl(req, res) {
   const shortUrl = nanoid();
@@ -20,16 +23,12 @@ export async function getUrlById(req, res) {
   const { id } = req.params;
   try {
     const { rows } = await connectionDB.query(
-      "SELECT * FROM urls WHERE id=$1",
+      'SELECT id,"shortUrl","bigUrl" AS url FROM urls WHERE id=$1',
       [Number(id)]
     );
+
     if (rows.length === 1) {
-      const responseObject = {
-        id: rows[0].id,
-        shortUrl: rows[0].shortUrl,
-        url: rows[0].bigUrl,
-      };
-      return res.status(200).send(responseObject);
+      return res.status(200).send(rows[0]);
     } else {
       return res.sendStatus(404);
     }
@@ -48,10 +47,41 @@ export async function redirectUser(req, res) {
     if (rows.length === 0) {
       return res.sendStatus(404);
     } else {
-      
       return res.redirect(rows[0].bigUrl);
     }
   } catch (error) {
     return res.status(404).send(error.message);
+  }
+}
+
+export async function deleteUrl(req, res) {
+  const token = req.headers.authorization;
+  const { id } = req.params;
+  try {
+    if (token) {
+      const finalToken = token.replace("Bearer ", "");
+      const verified = jwt.verify(finalToken, process.env.JWT_SECRET_KEY);
+      if (verified) {
+        const objectFromSelect = await connectionDB.query(
+          "SELECT * FROM urls WHERE id=$1",
+          [Number(id)]
+        );
+        const objectFromSelectUserId = objectFromSelect.rows[0].userId;
+        if (objectFromSelectUserId === verified.userId) {
+          await connectionDB.query("DELETE FROM urls WHERE id=$1", [
+            Number(id),
+          ]);
+          return res.sendStatus(204);
+        } else {
+          return res.sendStatus(401);
+        }
+      } else {
+        return res.sendStatus(401);
+      }
+    } else {
+      return res.sendStatus(401);
+    }
+  } catch (error) {
+    return res.status(401).send(error.message);
   }
 }

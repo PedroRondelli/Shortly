@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  deleteUrl,
   getUrlById,
   redirectUser,
   registerUrl,
@@ -13,5 +14,7 @@ routers.post("/urls/shorten", urlValidation, registerUrl);
 routers.get("/urls/:id", getUrlById);
 
 routers.get("/urls/open/:shortUrl", redirectUser);
+
+routers.delete("/urls/:id",deleteUrl);
 
 export default routers;
