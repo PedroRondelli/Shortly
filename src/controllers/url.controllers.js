@@ -10,8 +10,8 @@ export async function registerUrl(req, res) {
   const userId = res.locals.url.userId;
   try {
     await connectionDB.query(
-      'INSERT INTO urls ("userId","shortUrl","bigUrl") VALUES ($1,$2,$3)',
-      [userId, shortUrl, bigUrl]
+      'INSERT INTO urls ("userId","shortUrl","bigUrl","visitCount") VALUES ($1,$2,$3,$4)',
+      [userId, shortUrl, bigUrl, 0]
     );
     return res.status(201).send({ shortUrl });
   } catch (error) {
@@ -47,6 +47,11 @@ export async function redirectUser(req, res) {
     if (rows.length === 0) {
       return res.sendStatus(404);
     } else {
+      const updatedNumberOfVisits = rows[0].visitCount + 1;
+      await connectionDB.query(
+        'UPDATE urls SET "visitCount"=$1 WHERE "shortUrl"=$2',
+        [updatedNumberOfVisits, shortUrl]
+      );
       return res.redirect(rows[0].bigUrl);
     }
   } catch (error) {
