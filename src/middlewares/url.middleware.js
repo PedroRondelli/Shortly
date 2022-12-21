@@ -25,6 +25,7 @@ export function urlValidation(req, res, next) {
       } else {
         return res.sendStatus(401);
       }
+      
     } else {
       return res.sendStatus(401);
     }

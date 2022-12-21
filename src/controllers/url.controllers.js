@@ -6,12 +6,12 @@ dotenv.config();
 
 export async function registerUrl(req, res) {
   const shortUrl = nanoid();
-  const bigUrl = res.locals.url.url;
+  const {url} = res.locals.url;
   const userId = res.locals.url.userId;
   try {
     await connectionDB.query(
-      'INSERT INTO urls ("userId","shortUrl","bigUrl","visitCount") VALUES ($1,$2,$3,$4)',
-      [userId, shortUrl, bigUrl, 0]
+      'INSERT INTO urls ("userId","shortUrl","url","visitCount") VALUES ($1,$2,$3,$4)',
+      [userId, shortUrl, url, 0]
     );
     return res.status(201).send({ shortUrl });
   } catch (error) {
@@ -23,7 +23,7 @@ export async function getUrlById(req, res) {
   const { id } = req.params;
   try {
     const { rows } = await connectionDB.query(
-      'SELECT id,"shortUrl","bigUrl" AS url FROM urls WHERE id=$1',
+      'SELECT id,"shortUrl",url  FROM urls WHERE id=$1',
       [Number(id)]
     );
 
@@ -52,7 +52,7 @@ export async function redirectUser(req, res) {
         'UPDATE urls SET "visitCount"=$1 WHERE "shortUrl"=$2',
         [updatedNumberOfVisits, shortUrl]
       );
-      return res.redirect(rows[0].bigUrl);
+      return res.redirect(rows[0].url);
     }
   } catch (error) {
     return res.status(404).send(error.message);
@@ -90,3 +90,4 @@ export async function deleteUrl(req, res) {
     return res.status(401).send(error.message);
   }
 }
+

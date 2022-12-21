@@ -59,3 +59,34 @@ export async function signin(req, res) {
     res.send(error.message);
   }
 }
+
+export async function getUserProfile(req, res) {
+  const token = req.headers.authorization;
+  try {
+    if (token) {
+      const finalToken = token.replace("Bearer ", "");
+      const verified = jwt.verify(finalToken, process.env.JWT_SECRET_KEY);
+
+      if (verified) {
+        const { userId } = verified;
+        const { rows } = await connectionDB.query(
+          'SELECT u.id AS id,u.name AS name,SUM(ul."visitCount") AS "visitCount",json_agg(ul.* ORDER BY ul.id ASC) AS "shortenedUrls" FROM users u JOIN urls ul ON u.id=ul."userId" WHERE ul."userId"=$1 GROUP BY u.id',
+          [userId]
+        );
+
+        rows[0].shortenedUrls.forEach((url) => {
+          delete url.userId;
+          delete url.createdAt;
+        });
+
+        return res.send(rows[0]);
+      } else {
+        return res.sendStatus(401);
+      }
+    } else {
+      return res.sendStatus(401);
+    }
+  } catch (error) {
+    return res.status(401).send(error.message);
+  }
+}
