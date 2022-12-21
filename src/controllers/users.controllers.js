@@ -85,7 +85,7 @@ export async function getUserProfile(req, res) {
           const { name } = verified;
           const userProfile = {
             id: userId,
-            name:name,
+            name: name,
             visitCount: 0,
             shortenedUrls: [],
           };
@@ -99,5 +99,12 @@ export async function getUserProfile(req, res) {
     }
   } catch (error) {
     return res.status(401).send(error.message);
+  }
+}
+
+export async function rankUsers(req, res) {
+  try {
+  } catch (error) {
+    return res.send(error.message);
   }
 }
