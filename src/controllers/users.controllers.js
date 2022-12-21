@@ -104,6 +104,10 @@ export async function getUserProfile(req, res) {
 
 export async function rankUsers(req, res) {
   try {
+    const { rows } = await connectionDB.query(
+      'SELECT users.id AS id,users.name AS name,COUNT(urls.id) AS "linksCount",COALESCE(SUM(urls."visitCount"),0) AS "visitCount" FROM users LEFT JOIN urls ON urls."userId"=users.id GROUP BY users.id ORDER BY "visitCount" DESC LIMIT 10'
+    );
+    return res.send(rows);
   } catch (error) {
     return res.send(error.message);
   }
