@@ -42,6 +42,7 @@ export async function signin(req, res) {
         const data = {
           time: Date(),
           userId: rows[0].id,
+          name: rows[0].name,
         };
 
         const token = jwt.sign(data, jwtSecretKey, {
@@ -73,13 +74,23 @@ export async function getUserProfile(req, res) {
           'SELECT u.id AS id,u.name AS name,SUM(ul."visitCount") AS "visitCount",json_agg(ul.* ORDER BY ul.id ASC) AS "shortenedUrls" FROM users u JOIN urls ul ON u.id=ul."userId" WHERE ul."userId"=$1 GROUP BY u.id',
           [userId]
         );
+        if (rows[0]) {
+          rows[0].shortenedUrls.forEach((url) => {
+            delete url.userId;
+            delete url.createdAt;
+          });
 
-        rows[0].shortenedUrls.forEach((url) => {
-          delete url.userId;
-          delete url.createdAt;
-        });
-
-        return res.send(rows[0]);
+          return res.send(rows[0]);
+        } else {
+          const { name } = verified;
+          const userProfile = {
+            id: userId,
+            name:name,
+            visitCount: 0,
+            shortenedUrls: [],
+          };
+          return res.send(userProfile);
+        }
       } else {
         return res.sendStatus(401);
       }
