@@ -6,7 +6,7 @@ dotenv.config();
 
 export async function registerUrl(req, res) {
   const shortUrl = nanoid();
-  const {url} = res.locals.url;
+  const { url } = res.locals.url;
   const userId = res.locals.url.userId;
   try {
     await connectionDB.query(
@@ -71,6 +71,9 @@ export async function deleteUrl(req, res) {
           "SELECT * FROM urls WHERE id=$1",
           [Number(id)]
         );
+        if (objectFromSelect.rowCount === 0) {
+          return res.sendStatus(404);
+        }
         const objectFromSelectUserId = objectFromSelect.rows[0].userId;
         if (objectFromSelectUserId === verified.userId) {
           await connectionDB.query("DELETE FROM urls WHERE id=$1", [
@@ -90,4 +93,3 @@ export async function deleteUrl(req, res) {
     return res.status(401).send(error.message);
   }
 }
-

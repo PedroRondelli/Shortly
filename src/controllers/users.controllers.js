@@ -74,6 +74,7 @@ export async function getUserProfile(req, res) {
           'SELECT u.id AS id,u.name AS name,SUM(ul."visitCount") AS "visitCount",json_agg(ul.* ORDER BY ul.id ASC) AS "shortenedUrls" FROM users u JOIN urls ul ON u.id=ul."userId" WHERE ul."userId"=$1 GROUP BY u.id',
           [userId]
         );
+
         if (rows[0]) {
           rows[0].shortenedUrls.forEach((url) => {
             delete url.userId;
@@ -82,6 +83,13 @@ export async function getUserProfile(req, res) {
 
           return res.send(rows[0]);
         } else {
+          const { rowCount } = await connectionDB.query(
+            "SELECT * FROM users WHERE id=$1",
+            [userId]
+          );
+          if (rowCount === 0) {
+            return res.sendStatus(404);
+          }
           const { name } = verified;
           const userProfile = {
             id: userId,
@@ -105,7 +113,7 @@ export async function getUserProfile(req, res) {
 export async function rankUsers(req, res) {
   try {
     const { rows } = await connectionDB.query(
-      'SELECT users.id AS id,users.name AS name,COUNT(urls.id) AS "linksCount",COALESCE(SUM(urls."visitCount"),0) AS "visitCount" FROM users LEFT JOIN urls ON urls."userId"=users.id GROUP BY users.id ORDER BY "visitCount" DESC LIMIT 10'
+      'SELECT users.id AS id,users.name AS name,COUNT(urls.id) AS "linksCount",COALESCE(SUM(urls."visitCount"),0) AS "visitCount" FROM users LEFT JOIN urls ON urls."userId"=users.id GROUP BY users.id ORDER BY "visitCount" DESC,COUNT(urls.id) DESC LIMIT 10'
     );
     return res.send(rows);
   } catch (error) {
